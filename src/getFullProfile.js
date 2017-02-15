@@ -2,6 +2,8 @@ var utils = require("../utils");
 var log = require("npmlog");
 var apiUrl = "voyager/api/identity/profiles/{userId}/profileView";
 
+// https://www.linkedin.com/voyager/api/identity/profiles/iryna-shyman-a385a6132/profileContactInfo"
+
 function getOccupations(data) {
     var positions = [];
     if (data && data.length > 0) {
@@ -37,12 +39,13 @@ module.exports = function (api, ctx) {
         }
 
         utils.get(ctx.baseUrl + apiUrl.replace('{userId}', userId), ctx.jar).then(function (res) {
-            if (res.statusCode == 403) {
-                callback(res.statusMessage + ": " + res.body);
+            if (res.statusCode !== 200) {
+                callback(res.statusCode + ":" + res.statusMessage + " - " + res.body);
             }
 
             callback(null, formatData(JSON.parse(res.body)));
         }).catch(function (error) {
+            log.error("Error occured in getFriendsList " + error);
             callback(error);
         })
     }

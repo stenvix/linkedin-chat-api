@@ -27,9 +27,14 @@ module.exports = function (api, ctx) {
     return function (message, userUrn) {
         var form = createMessageBody(message, userUrn);
         utils.postJSON(ctx.baseUrl + "voyager/api/messaging/conversations?action=create", ctx.jar, form).then(function (res) {
-            console.log("sucess");
+            if(res.statusCode!==201){
+                log.error("Error occurred while message sending");
+                throw {error: "Error occurred while message sending"}
+            }
+            var date = new Date();
+            log.info("Message successfully sent at " + date.getHours() + ":"+ date.getMinutes());
         }).catch(function (error) {
-            console.log(error);
+            log.error(error);
         })
     }
 };

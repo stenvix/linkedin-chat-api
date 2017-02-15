@@ -116,13 +116,6 @@ function post(url, jar, form) {
 
 function postJSON(url, jar, form) {
     var headers = getHeaders(url);
-    headers['Content-Type'] = 'application/json';
-    headers["Content-Length"] = JSON.stringify(form).length;
-    // headers["Accept"] = "*/*";
-    // headers["Accept-Encoding"] = "gzip, deflate, br";
-    // headers["Accept-Language"] = "ru,en-US;q=0.8,en;q=0.6,uk;q=0.4";
-    // headers["Pragma"] = "no-cache";
-
     var op = {
         headers: headers,
         timeout: 60000,
@@ -147,25 +140,6 @@ function postJSON(url, jar, form) {
     });
 }
 
-function postFormData(url, jar, form, qs) {
-    var headers = getHeaders(url);
-    headers['Content-Type'] = 'application/json';
-    var op = {
-        headers: headers,
-        timeout: 60000,
-        url: url,
-        method: "POST",
-        formData: form,
-        qs: qs,
-        jar: jar,
-        gzip: true
-    };
-
-    return request(op).then(function (res) {
-        return res[0];
-    });
-}
-
 module.exports = {
     arrToForm: arrToForm,
     getType: getType,
@@ -174,6 +148,5 @@ module.exports = {
     getHeaders: getHeaders,
     saveCookies: saveCookies,
     post: post,
-    postFormData: postFormData,
     postJSON: postJSON
 };

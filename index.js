@@ -5,30 +5,30 @@ var cheerio = require("cheerio");
 var log = require("npmlog");
 var BASE_URL = "https://www.linkedin.com/";
 
-function buildAPI(globalOptions, html, jar){
-	var apiFuncNames = [
-		'getCurrentUserProfile',
+function buildAPI(globalOptions, html, jar) {
+    var apiFuncNames = [
+        'getCurrentUserProfile',
         'getFriendsList',
         'getFullProfile',
         'sendMessage'
-	];
-	var ctx = {
-		baseUrl: BASE_URL,
-		userId: null,
-		jar: jar,
-		globalOptions: globalOptions,
-		loggedIn: true
-	};
+    ];
+    var ctx = {
+        baseUrl: BASE_URL,
+        userId: null,
+        jar: jar,
+        globalOptions: globalOptions,
+        loggedIn: true
+    };
 
-	var api = {
-		setOptions: setOptions.bind(null, globalOptions)
-	};
+    var api = {
+        setOptions: setOptions.bind(null, globalOptions)
+    };
 
-	apiFuncNames.map(function(v){
-		api[v] = require('./src/'+ v)(api, ctx);
-	});
+    apiFuncNames.map(function (v) {
+        api[v] = require('./src/' + v)(api, ctx);
+    });
 
-	return [ctx, api];
+    return [ctx, api];
 }
 
 function setOptions(globalOptions, options) {
@@ -48,19 +48,19 @@ function setOptions(globalOptions, options) {
     });
 }
 
-function makeLogin(jar, email, password, callback) {
+function makeLogin(jar, email, password) {
     return function (res) {
         var html = res.body;
         var $ = cheerio.load(html);
         var arr = [];
 
-        $(".login-form input").map(function(i, v){
-            if($(v).attr('name')){
+        $(".login-form input").map(function (i, v) {
+            if ($(v).attr('name')) {
                 arr.push({val: $(v).val(), name: $(v).attr('name')});
             }
         });
 
-        arr = arr.filter(function(v) {
+        arr = arr.filter(function (v) {
             return v.val && v.val.length;
         });
 
@@ -71,8 +71,13 @@ function makeLogin(jar, email, password, callback) {
         log.info("Logging in...");
 
         return utils
-            .post(BASE_URL+"uas/login-submit", jar, form)
-            .then(utils.saveCookies(jar));
+            .post(BASE_URL + "uas/login-submit", jar, form)
+            .then(utils.saveCookies(jar))
+            .then(function (res) {
+                if (res.statusCode !== 302) {
+                    throw {error: "Login or password is incorrect!"};
+                }
+            });
     }
 }
 
@@ -83,33 +88,33 @@ function loginHelper(email, password, globalOptions, callback) {
     mainPromise = utils
         .get("https://www.linkedin.com/", null)
         .then(utils.saveCookies(jar))
-        .then(makeLogin(jar, email, password, callback))
-        .then(function(){
-        	return utils
-        		.get(BASE_URL, jar)
-        		.then(utils.saveCookies(jar));
-        })
+        .then(makeLogin(jar, email, password))
+        .then(function () {
+            return utils
+                .get(BASE_URL, jar)
+                .then(utils.saveCookies(jar));
+        });
 
-        var ctx = null;
-        var api = null;
+    var ctx = null;
+    var api = null;
 
-        mainPromise = mainPromise
-        .then(function(res){
-        	var html = res.body;
-        	var stuff = buildAPI(globalOptions, html, jar);
-        	ctx = stuff[0];
-        	api = stuff[1];
+    mainPromise = mainPromise
+        .then(function (res) {
+            var html = res.body;
+            var stuff = buildAPI(globalOptions, html, jar);
+            ctx = stuff[0];
+            api = stuff[1];
         });
 
     mainPromise
-	    .then(function() {
-	      log.info('Done logging in.');
-	      return callback(null, api);
-	    })
-	    .catch(function(e) {
-	      log.error("Error in login:", e.error || e);
-	      callback(e);
-	    });
+        .then(function () {
+            log.info('Done logging in.');
+            return callback(null, api);
+        })
+        .catch(function (e) {
+            log.error("Error in login:", e.error || e);
+            callback(e);
+        });
 
 
 }

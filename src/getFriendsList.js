@@ -5,7 +5,8 @@
 
 var utils = require("../utils");
 var log = require("npmlog");
-var API_URL = "voyager/api/me";
+var apiUrlSummary = "voyager/api/relationships/connectionsSummary";
+var apiUrlConnections = "voyager/api/relationships/connections?count=";
 
 function formatData(data) {
     return {
@@ -23,31 +24,22 @@ module.exports = function (api, ctx) {
             throw {error: "getFriendsList need callback"};
         }
 
-        //
-        // utils.get("https://www.linkedin.com/voyager/api/identity/profiles/iryna-shyman-a385a6132/profileContactInfo", ctx.jar).then(function (res) {
-        //     var res1 = JSON.parse(res.body);
-        //     console.log(res1)
-        // });
-        //
-        //
-        // utils.get("https://www.linkedin.com/voyager/api/identity/profiles/iryna-shyman-a385a6132/profileView", ctx.jar).then(function (res) {
-        //     var res1 = JSON.parse(res.body);
-        //     console.log(res1)
-        // });
-
-        utils.get(ctx.baseUrl + "voyager/api/relationships/connectionsSummary", ctx.jar).then(function (res) {
+        utils.get(ctx.baseUrl + apiUrlSummary, ctx.jar).then(function (res) {
             var result = JSON.parse(res.body);
-            utils.get(ctx.baseUrl + "voyager/api/relationships/connections?count=" + result.numConnections, ctx.jar)
+            utils.get(ctx.baseUrl + apiUrlConnections + result.numConnections, ctx.jar)
                 .then(function (res) {
-                    var friendList =  JSON.parse(res.body).elements;
+                    if (res.statusCode !== 200) {
+                        throw  {error: res.statusCode + ":" + res.statusMessage + " - " + res.body};
+                    }
+                    var friendList = JSON.parse(res.body).elements;
                     var formatedList = [];
                     friendList.forEach(function (v) {
                         formatedList.push(formatData(v));
                     });
-                    callback(null,formatedList);
+                    callback(null, formatedList);
                 })
                 .catch(function (error) {
-                    log.error("Error occured in getFriendList", error);
+                    log.error("Error occured in getFriendList ", error);
                     callback(error);
                 })
         });
