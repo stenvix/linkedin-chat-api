@@ -1,0 +1,12 @@
+containers:
+  app: 
+    setup:
+      - !Alpine v3.5
+      - !Install [nodejs]
+      - !Sh "npm install"
+
+
+commands:
+  bash: !Command
+    container: app
+    run: "which node"
