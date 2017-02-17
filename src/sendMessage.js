@@ -3,7 +3,7 @@
  */
 var utils = require("../utils");
 var log = require("npmlog");
-var API_URL = "voyager/api/me";
+var apiUrl = "voyager/api/messaging/conversations?action=create";
 
 function createMessageBody(message, recipient) {
     return {
@@ -24,15 +24,13 @@ function createMessageBody(message, recipient) {
 }
 
 module.exports = function (api, ctx) {
-    return function (message, userUrn) {
-        var form = createMessageBody(message, userUrn);
-        utils.postJSON(ctx.baseUrl + "voyager/api/messaging/conversations?action=create", ctx.jar, form).then(function (res) {
+    return function (message, userID) {
+        var form = createMessageBody(message, userID);
+        utils.postJSON(ctx.baseUrl + apiUrl, ctx.jar, form).then(function (res) {
             if(res.statusCode!==201){
                 log.error("Error occurred while message sending");
                 throw {error: "Error occurred while message sending"}
             }
-            var date = new Date();
-            log.info("Message successfully sent at " + date.getHours() + ":"+ date.getMinutes());
         }).catch(function (error) {
             log.error(error);
         })

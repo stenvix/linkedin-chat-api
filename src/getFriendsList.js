@@ -13,8 +13,8 @@ function formatData(data) {
         firstName: data.miniProfile.firstName,
         lastName: data.miniProfile.lastName,
         occupation: data.miniProfile.occupation,
-        userId: data.miniProfile.publicIdentifier,
-        userUrn: data.miniProfile.entityUrn.split(':')[3]
+        publicId: data.miniProfile.publicIdentifier,
+        userID: data.miniProfile.entityUrn.split(':')[3]
     }
 }
 

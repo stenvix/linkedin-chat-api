@@ -11,7 +11,7 @@ function formatData(data) {
         plainId: data.plainId,
         occupation: data.miniProfile.occupation,
         publicIdentifier: data.miniProfile.publicIdentifier,
-        userUrn: data.miniProfile.entityUrn.split(':')[3]
+        userID: data.miniProfile.entityUrn.split(':')[3]
     }
 }
 
